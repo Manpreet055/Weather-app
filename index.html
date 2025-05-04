@@ -1,0 +1,97 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <div class="searchbarMenu">
+      <div></div>
+      <div class="searchBar-container">
+        <input type="text" class="searchBar" placeholder="Search the city" />
+        <button class="searchButton">Search</button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="basicInfo">
+        <h1 class="cityName">Loading..</h1>
+        <h3 class="date">Loading..</h3>
+        <div class="aqi">AQI </div>
+        <div class="temperature">Loading..</div>
+        <span class="condition">Loading..</span>
+      </div>
+      <div class="hourlyForeCast">
+        <h3>24-hour ForeCast</h3>
+      </div>
+    </div>
+    <div class="extraInfo">
+      <div class="fiveDayForecast">
+        <div class="day" id="today">
+          <div>Thursday</div>
+          <div class="icons"></div>
+          <div class="daysTemprature">40&deg;</div>
+        </div>
+        <div class="day" id="tomorrow">
+          <div>Friday</div>
+          <div class="icons"></div>
+          <div class="daysTemprature">50&deg;</div>
+        </div>
+        <div class="day" id="thirdDay">
+          <div>Saturday</div>
+          <div class="icons"></div>
+          <div class="daysTemprature">51&deg;</div>
+        </div>
+        <div class="day" id="fourthDay">
+          <div>Sunday</div>
+          <div class="icons"></div>
+          <div class="daysTemprature">50&deg;</div>
+        </div>
+        <div class="day" id="fifthDay">
+          <div>Monday</div>
+          <div class="icons"></div>
+          <div class="daysTemprature">54&deg;</div>
+        </div>
+      </div>
+      <div class="extraFeatures">
+          <div id="pressure">Pressure</div>
+          <div id="pressure__unit">1013 hPa</div>
+        <div class="windspeed">Wind speed</div>
+        <div id="windSpeed"></div>
+          <div id="feelslike">Feels Like</div>
+          <div id="feelslike__unit">302</div>
+          <div id="heat">Heat Index</div>
+          <div id="heat__unit"></div>
+          <div id="visibility">Visibility</div>
+          <div id="visibility__unit">10000</div>
+          <div id="avgTemp">Avg Temperature</div>
+          <div id="avgTemp__unit">300</div>
+      </div>
+      <div class="detailed">
+        <div class="detailed-info">
+          <h3>UV</h3>
+          <div class="uv-unit">6 (High)</div>
+        </div>
+        <div class="detailed-info">
+          <h3>Humidity</h3>
+          <div class="humidity-unit">10%</div>
+        </div>
+          <div class="sun">
+            <img class="sunIcon" src="sunrise.png" alt="sunrise">
+            <img class="sunIcon" src="sunset.png" alt="sunset">
+            <div class="sunRise">18:50</div>
+            <div class="sunSet">18:50</div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
