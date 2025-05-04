@@ -14,82 +14,79 @@
     <script src="script.js" defer></script>
   </head>
   <body>
-    <div class="searchbarMenu">
-      <div></div>
-      <div class="searchBar-container">
-        <input type="text" class="searchBar" placeholder="Search the city" />
-        <button class="searchButton">Search</button>
-      </div>
+    <div class="searchbar-container">
+      <input type="text" class="searchBar" placeholder="Search the city" />
+      <button class="searchButton">Search</button>
     </div>
-    <div class="container">
-      <div class="basicInfo">
-        <h1 class="cityName">Loading..</h1>
-        <h3 class="date">Loading..</h3>
-        <div class="aqi">AQI </div>
-        <div class="temperature">Loading..</div>
-        <span class="condition">Loading..</span>
+    <div class="hero-content">
+      <div class="current-weather">
+        <h1 class="city-name"></h1>
+        <h3 class="date"></h3>
+        <div class="aqi-info">AQI</div>
+        <div class="temperature"></div>
+        <span class="current-weather-condition"></span>
       </div>
-      <div class="hourlyForeCast">
+      <div class="hourly-weather">
         <h3>24-hour ForeCast</h3>
+        <div class="hourly-weather-data"></div>
       </div>
     </div>
-    <div class="extraInfo">
-      <div class="fiveDayForecast">
-        <div class="day" id="today">
+    <div class="weather-summary">
+      <div class="weekly-weather">
+        <div class="day">
           <div>Thursday</div>
           <div class="icons"></div>
           <div class="daysTemprature">40&deg;</div>
         </div>
-        <div class="day" id="tomorrow">
+        <div class="day">
           <div>Friday</div>
           <div class="icons"></div>
           <div class="daysTemprature">50&deg;</div>
         </div>
-        <div class="day" id="thirdDay">
+        <div class="day">
           <div>Saturday</div>
           <div class="icons"></div>
           <div class="daysTemprature">51&deg;</div>
         </div>
-        <div class="day" id="fourthDay">
+        <div class="day">
           <div>Sunday</div>
           <div class="icons"></div>
           <div class="daysTemprature">50&deg;</div>
         </div>
-        <div class="day" id="fifthDay">
+        <div class="day">
           <div>Monday</div>
           <div class="icons"></div>
           <div class="daysTemprature">54&deg;</div>
         </div>
       </div>
-      <div class="extraFeatures">
-          <div id="pressure">Pressure</div>
-          <div id="pressure__unit">1013 hPa</div>
-        <div class="windspeed">Wind speed</div>
-        <div id="windSpeed"></div>
-          <div id="feelslike">Feels Like</div>
-          <div id="feelslike__unit">302</div>
-          <div id="heat">Heat Index</div>
-          <div id="heat__unit"></div>
-          <div id="visibility">Visibility</div>
-          <div id="visibility__unit">10000</div>
-          <div id="avgTemp">Avg Temperature</div>
-          <div id="avgTemp__unit">300</div>
+      <div class="weather-details-card">
+        <span>Pressure</span>
+        <span id="pressure-unit"></span>
+        <span>Wind speed</span>
+        <span id="windspeed-unit"></span>
+        <span>Feels Like</span>
+        <span id="feelslike-unit"></span>
+        <span>Heat Index</span>
+        <span id="heat-unit"></span>
+        <span>Visibility</span>
+        <span id="visibility-unit"></span>
+        <span>Avg Temperature</span>
+        <span id="avgTemp-unit"></span>
       </div>
-      <div class="detailed">
-        <div class="detailed-info">
-          <h3>UV</h3>
-          <div class="uv-unit">6 (High)</div>
+      <div class="uv-humidity-card">
+        <div class="uv-humidity">
+          <h3>UV Index</h3>
+          <span class="uv-unit"></span>
         </div>
-        <div class="detailed-info">
+        <div class="uv-humidity">
           <h3>Humidity</h3>
-          <div class="humidity-unit">10%</div>
+          <span class="humidity-unit"></span>
         </div>
-          <div class="sun">
-            <img class="sunIcon" src="sunrise.png" alt="sunrise">
-            <img class="sunIcon" src="sunset.png" alt="sunset">
-            <div class="sunRise">18:50</div>
-            <div class="sunSet">18:50</div>
-        </div>
+        <div class="astro-card">
+          <img class="sunIcon" src="sunrise.png" alt="sunrise" />
+          <img class="sunIcon" src="sunset.png" alt="sunset" />
+          <span class="sunRise"></span>
+          <span class="sunSet"></span>
         </div>
       </div>
     </div>

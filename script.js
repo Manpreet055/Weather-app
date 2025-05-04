@@ -2,55 +2,39 @@ let longitude;
 let latitude;
 
 let primaryApiKey = "7272517a48db4727b09183643250205";
-const apiKey = "c1482848b4593d224d394f35ca73bdab";
+// const apiKey = "c1482848b4593d224d394f35ca73bdab";
 
-//Elements
-let cityName = document.querySelector(".cityName");
-let weatherCondition = document.querySelector(".condition");
-let humidity = document.querySelector(".humidity-unit");
-let sunRise = document.querySelector(".sunRise");
-let sunSet = document.querySelector(".sunSet");
-let windSpeed = document.querySelector("#windSpeed");
+let cityName = document.querySelector(".city-name");
 let temperature = document.querySelector(".temperature");
-let pressure = document.querySelector("#pressure__unit");
-let feelsLike = document.querySelector("#feelslike__unit");
-let visibility = document.querySelector("#visibility__unit");
-let averageTemprature = document.querySelector("#avgTemp__unit");
-let airQualityelement = document.querySelector(".aqi");
-let uv = document.querySelector(".uv-unit");
+let airQualityElement = document.querySelector(".aqi-info");
 let date = document.querySelector(".date");
-let hourlyForeCast = document.querySelector(".hourlyForeCast");
+let hourlyForeCast = document.querySelector(".hourly-weather-data");
 let body = document.querySelector("body");
-let heat = document.querySelector("#heat__unit");
-let aqiMeaning = {
+let weatherCondition = document.querySelector(".current-weather-condition");
+let aqiDescriptions = {
   1: "Good",
   2: "Fair",
   3: "Moderate",
   4: "Poor",
   5: "Very Poor",
 };
+let humidity = document.querySelector(".humidity-unit");
+let sunRise = document.querySelector(".sunRise");
+let sunSet = document.querySelector(".sunSet");
+let windSpeed = document.querySelector("#windspeed-unit");
+let pressure = document.querySelector("#pressure-unit");
+let feelsLike = document.querySelector("#feelslike-unit");
+let visibility = document.querySelector("#visibility-unit");
+let averageTemprature = document.querySelector("#avgTemp-unit");
+let uv = document.querySelector(".uv-unit");
+let heat = document.querySelector("#heat-unit");
 
 navigator.geolocation.getCurrentPosition(
   (position) => {
     // Success callback
     latitude = position.coords.latitude;
+    cityName;
     longitude = position.coords.longitude;
-
-    fetch(
-      `http://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${apiKey}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        let airQuality = data.list[0].main.aqi;
-        let displayAirQuality = aqiMeaning[airQuality];
-        airQualityelement.textContent =
-          airQualityelement.textContent +
-          " " +
-          airQuality +
-          "-" +
-          displayAirQuality;
-      })
-      .catch((error) => console.error(error.message));
     getWeatherData();
   },
   (error) => {
@@ -63,20 +47,27 @@ navigator.geolocation.getCurrentPosition(
 async function getWeatherData() {
   try {
     let response = await fetch(
-      `https://api.weatherapi.com/v1/forecast.json?key=${primaryApiKey}&q=${latitude},${longitude}&days=1`
+      `https://api.weatherapi.com/v1/forecast.json?key=${primaryApiKey}&q=${latitude},${longitude}&days=1&aqi=yes`
     );
     if (!response.ok) {
       throw new Error("Something went Wrong..");
     }
     let weatherData = await response.json();
+
     console.log(weatherData);
+
+    if (weatherData.forecast.forecastday[0].astro.is_moon_up != 1) {
+      body.classList.add("dayBackground");
+    } else {
+      body.classList.remove("dayBackground");
+    }
+
     showWeather(weatherData);
+    getHourlyForecast(weatherData);
   } catch (error) {
     console.error(error.message);
   }
 }
-
-//Uv
 
 function getUV(uvi) {
   if (uvi <= 2) return "Low";
@@ -89,51 +80,45 @@ function getUV(uvi) {
 function showWeather(weatherData) {
   let currentData = weatherData.current;
   let currentDayData = weatherData.forecast.forecastday[0].day;
-  let astro = weatherData.forecast.forecastday[0].astro;
+
+  //Basic info updation
   cityName.textContent = weatherData.location.region;
+  date.textContent = weatherData.forecast.forecastday[0].date;
+  weatherCondition.textContent = currentData.condition.text;
+
   let temp = currentData.temp_c;
   temperature.textContent = temp.toFixed(0) + "\u00B0";
+
+  let airQuality = weatherData.current.air_quality["us-epa-index"];
+  let displayAirQuality = aqiDescriptions[airQuality];
+  airQualityElement.textContent =
+    airQualityElement.textContent + " " + airQuality + "-" + displayAirQuality;
+
   feelsLike.textContent = currentData.feelslike_c + "\u00B0";
   humidity.textContent = currentData.humidity + "%";
   pressure.textContent = currentData.pressure_mb + " " + "hPa";
   uv.textContent = currentData.uv + " " + getUV(currentData.uv);
-  windSpeed.textContent = currentData.wind_kph + "km/h";
-  weatherCondition.textContent = currentData.condition.text;
-  sunRise.textContent = astro.sunrise;
-  sunSet.textContent = astro.sunset;
   averageTemprature.textContent = currentDayData.avgtemp_c + "\u00B0";
   visibility.textContent = currentDayData.avgvis_km + " " + "km";
-  date.textContent = weatherData.forecast.forecastday[0].date;
-  heat.textContent = weatherData.current.heatindex_c+"\u00B0";
-  if (weatherData.forecast.forecastday[0].astro.is_moon_up == 1) {
-    body.classList.toggle("dayBackground");
-  }
-  let hourlyData = weatherData.forecast.forecastday[0].hour;
+  heat.textContent = weatherData.current.heatindex_c + "\u00B0";
+  windSpeed.textContent = currentData.wind_kph + "km/h";
 
+  let astro = weatherData.forecast.forecastday[0].astro;
+  sunRise.textContent = astro.sunrise;
+  sunSet.textContent = astro.sunset;
+}
+
+//function of get hourlyData and update that data on DOM
+function getHourlyForecast(weatherData) {
+  let hourlyData = weatherData.forecast.forecastday[0].hour;
   hourlyData.forEach((data) => {
     hourlyForeCast.insertAdjacentHTML(
       "beforeend",
-      `<div class = hourlyTime>${data.time.slice(11)}</div><img src="${
+      `<span class = hourlyTime>${data.time.slice(11)}</span><img src="${
         data.condition.icon
-      }" alt="weatherIcon" class="hourlyWeatherIcon" ><div class="hourlyTemp">${
+      }" alt="weatherIcon" class="hourlyWeatherIcon" ><span class="hourlyTemp">${
         data.temp_c + "\u00B0"
-      }</div>`
+      }</span>`
     );
   });
 }
-// }
-
-// async function getForecastData() {
-//   try {
-//     let response = await fetch(
-//       `https://api.openweathermap.org/data/2.5/forecast?q=Dubai&appid=${apiKey}`
-//     );
-//     if (!response.ok) {
-//       throw "Something Went Wrong...";
-//     }
-//     let data = await response.json();
-//     console.log(data);
-//   } catch (error) {
-//     console.error(error.message);
-//   }
-// }
