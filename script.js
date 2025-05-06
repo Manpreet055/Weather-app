@@ -4,6 +4,8 @@ let latitude;
 let primaryApiKey = "7272517a48db4727b09183643250205";
 // const apiKey = "c1482848b4593d224d394f35ca73bdab";
 
+let input = document.querySelector(".searchBar");
+let searchButton = document.querySelector(".searchButton");
 let cityName = document.querySelector(".city-name");
 let temperature = document.querySelector(".temperature");
 let airQualityElement = document.querySelector(".aqi-info");
@@ -11,6 +13,7 @@ let date = document.querySelector(".date");
 let hourlyForeCast = document.querySelector(".hourly-weather-data");
 let body = document.querySelector("body");
 let weatherCondition = document.querySelector(".current-weather-condition");
+let dailyWeather = document.querySelector(".weekly-weather");
 let aqiDescriptions = {
   1: "Good",
   2: "Fair",
@@ -35,7 +38,7 @@ navigator.geolocation.getCurrentPosition(
     latitude = position.coords.latitude;
     cityName;
     longitude = position.coords.longitude;
-    getWeatherData();
+    getWeatherData(latitude, longitude);
   },
   (error) => {
     // Error callback
@@ -44,24 +47,24 @@ navigator.geolocation.getCurrentPosition(
 );
 
 //Get weather Data function
-async function getWeatherData() {
+async function getWeatherData(latitude, longitude) {
   try {
     let response = await fetch(
-      `https://api.weatherapi.com/v1/forecast.json?key=${primaryApiKey}&q=${latitude},${longitude}&days=1&aqi=yes`
+      `https://api.weatherapi.com/v1/forecast.json?key=${primaryApiKey}&q=${latitude},${longitude}&days=5&aqi=yes`
     );
     if (!response.ok) {
       throw new Error("Something went Wrong..");
     }
     let weatherData = await response.json();
 
-    console.log(weatherData);
+    // console.log(weatherData.forecast.forecastday);
 
     if (weatherData.forecast.forecastday[0].astro.is_moon_up != 1) {
       body.classList.add("dayBackground");
     } else {
       body.classList.remove("dayBackground");
     }
-
+    getWeeklyForecast(weatherData);
     showWeather(weatherData);
     getHourlyForecast(weatherData);
   } catch (error) {
@@ -77,13 +80,20 @@ function getUV(uvi) {
   if (uvi > 10) return "Extreme";
 }
 
+function convertDateToDay(date) {
+  let inputDate = new Date(date);
+  let day = inputDate.toLocaleDateString("en-us", { weekday: "long" });
+  return day;
+}
 function showWeather(weatherData) {
   let currentData = weatherData.current;
   let currentDayData = weatherData.forecast.forecastday[0].day;
 
   //Basic info updation
+  // let storedCity = localStorage.getItem("cityName") || "";
   cityName.textContent = weatherData.location.region;
-  date.textContent = weatherData.forecast.forecastday[0].date;
+
+  date.textContent = convertDateToDay(weatherData.forecast.forecastday[0].date);
   weatherCondition.textContent = currentData.condition.text;
 
   let temp = currentData.temp_c;
@@ -92,7 +102,7 @@ function showWeather(weatherData) {
   let airQuality = weatherData.current.air_quality["us-epa-index"];
   let displayAirQuality = aqiDescriptions[airQuality];
   airQualityElement.textContent =
-    airQualityElement.textContent + " " + airQuality + "-" + displayAirQuality;
+    "AQI" + " " + airQuality + "-" + displayAirQuality;
 
   feelsLike.textContent = currentData.feelslike_c + "\u00B0";
   humidity.textContent = currentData.humidity + "%";
@@ -107,10 +117,10 @@ function showWeather(weatherData) {
   sunRise.textContent = astro.sunrise;
   sunSet.textContent = astro.sunset;
 }
-
 //function of get hourlyData and update that data on DOM
 function getHourlyForecast(weatherData) {
   let hourlyData = weatherData.forecast.forecastday[0].hour;
+  hourlyForeCast.innerHTML = "";
   hourlyData.forEach((data) => {
     hourlyForeCast.insertAdjacentHTML(
       "beforeend",
@@ -121,4 +131,68 @@ function getHourlyForecast(weatherData) {
       }</span>`
     );
   });
+}
+
+async function getCityName(city) {
+  try {
+    let response = await fetch(
+      `https://api.weatherapi.com/v1/search.json?key=${primaryApiKey}&q=${city}`
+    );
+    if (!response.ok) {
+      throw new Error("Something went wrong..");
+    }
+    let data = await response.json();
+    await getWeatherData(data[0].lat, data[0].lon);
+    cityName.textContent = data[0].name + ", " + data[0].region;
+    localStorage.setItem("cityName", cityName.textContent);
+    // console.log(data);
+    return data;
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
+input.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    getCityName(input.value);
+    input.value = "";
+  }
+});
+
+searchButton.addEventListener("click", () => {
+  getCityName(input.value);
+  input.value = "";
+});
+
+function getWeeklyForecast(dailyData) {
+  let fragmentDay = document.createDocumentFragment();
+  let fragmentIcon = document.createDocumentFragment();
+  let fragmentTemp = document.createDocumentFragment();
+  let WeeklyData = dailyData.forecast.forecastday;
+
+  // Clear previous content to avoid layout issues
+  dailyWeather.innerHTML = "";
+
+  WeeklyData.forEach((day) => {
+
+    let date = document.createElement("span");
+    date.className = "day";
+    date.textContent = convertDateToDay(day.date);
+
+    let icon = document.createElement("img");
+    let iconSource = day.day.condition.icon;
+    icon.src = iconSource;
+
+    let temp = document.createElement("span");
+    temp.className = "daily-temp"
+    let fetchTemp = day.day.avgtemp_c;
+    temp.textContent = fetchTemp + "\u00B0";
+
+    fragmentDay.appendChild(date);
+    fragmentIcon.appendChild(icon);
+    fragmentTemp.appendChild(temp);
+  });
+  dailyWeather.appendChild(fragmentDay);
+  dailyWeather.appendChild(fragmentIcon);
+  dailyWeather.appendChild(fragmentTemp);
 }
