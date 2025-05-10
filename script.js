@@ -4,8 +4,8 @@ let latitude;
 let primaryApiKey = "7272517a48db4727b09183643250205";
 // const apiKey = "c1482848b4593d224d394f35ca73bdab";
 
-let input = document.querySelector(".searchBar");
-let searchButton = document.querySelector(".searchButton");
+let input = document.querySelector(".searchbar");
+let searchButton = document.querySelector(".search-button");
 let cityName = document.querySelector(".city-name");
 let temperature = document.querySelector(".temperature");
 let airQualityElement = document.querySelector(".aqi-info");
@@ -13,7 +13,7 @@ let date = document.querySelector(".date");
 let hourlyForeCast = document.querySelector(".hourly-weather-data");
 let body = document.querySelector("body");
 let weatherCondition = document.querySelector(".current-weather-condition");
-let dailyWeather = document.querySelector(".weekly-weather");
+let dailyWeather = document.querySelector(".daily-weather-data");
 let aqiDescriptions = {
   1: "Good",
   2: "Fair",
@@ -143,9 +143,9 @@ async function getCityName(city) {
     }
     let data = await response.json();
     await getWeatherData(data[0].lat, data[0].lon);
-    cityName.textContent = data[0].name + ", " + data[0].region;
+    cityName.textContent = data[0].name;
     localStorage.setItem("cityName", cityName.textContent);
-    // console.log(data);
+    console.log(data);
     return data;
   } catch (error) {
     console.error(error.message);
@@ -165,9 +165,7 @@ searchButton.addEventListener("click", () => {
 });
 
 function getWeeklyForecast(dailyData) {
-  let fragmentDay = document.createDocumentFragment();
-  let fragmentIcon = document.createDocumentFragment();
-  let fragmentTemp = document.createDocumentFragment();
+    let fragment = document.createDocumentFragment();
   let WeeklyData = dailyData.forecast.forecastday;
 
   // Clear previous content to avoid layout issues
@@ -177,22 +175,20 @@ function getWeeklyForecast(dailyData) {
 
     let date = document.createElement("span");
     date.className = "day";
-    date.textContent = convertDateToDay(day.date);
+      date.textContent = convertDateToDay(day.date);
+      fragment.appendChild(date);
 
     let icon = document.createElement("img");
     let iconSource = day.day.condition.icon;
-    icon.src = iconSource;
+      icon.src = iconSource;
+      fragment.appendChild(icon);
 
     let temp = document.createElement("span");
     temp.className = "daily-temp"
     let fetchTemp = day.day.avgtemp_c;
-    temp.textContent = fetchTemp + "\u00B0";
+      temp.textContent = fetchTemp + "\u00B0";
+      fragment.appendChild(temp);
 
-    fragmentDay.appendChild(date);
-    fragmentIcon.appendChild(icon);
-    fragmentTemp.appendChild(temp);
   });
-  dailyWeather.appendChild(fragmentDay);
-  dailyWeather.appendChild(fragmentIcon);
-  dailyWeather.appendChild(fragmentTemp);
+  dailyWeather.appendChild(fragment);
 }
