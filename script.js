@@ -1,11 +1,8 @@
 let longitude;
 let latitude;
 
-let primaryApiKey = "7272517a48db4727b09183643250205";
-// const apiKey = "c1482848b4593d224d394f35ca73bdab";
-
-let input = document.querySelector(".searchBar");
-let searchButton = document.querySelector(".searchButton");
+let input = document.querySelector(".searchbar");
+let searchButton = document.querySelector(".search-button");
 let cityName = document.querySelector(".city-name");
 let temperature = document.querySelector(".temperature");
 let airQualityElement = document.querySelector(".aqi-info");
@@ -13,7 +10,7 @@ let date = document.querySelector(".date");
 let hourlyForeCast = document.querySelector(".hourly-weather-data");
 let body = document.querySelector("body");
 let weatherCondition = document.querySelector(".current-weather-condition");
-let dailyWeather = document.querySelector(".weekly-weather");
+let dailyWeather = document.querySelector(".daily-weather-data");
 let aqiDescriptions = {
   1: "Good",
   2: "Fair",
@@ -21,6 +18,10 @@ let aqiDescriptions = {
   4: "Poor",
   5: "Very Poor",
 };
+let errorCardWrapper = document.querySelector(".error-card-wrapper");
+let suggestions = document.querySelector(".dropdown-suggestions");
+let errorCard = document.querySelector(".error-card");
+let locate = document.querySelector(".location");
 let humidity = document.querySelector(".humidity-unit");
 let sunRise = document.querySelector(".sunRise");
 let sunSet = document.querySelector(".sunSet");
@@ -31,34 +32,43 @@ let visibility = document.querySelector("#visibility-unit");
 let averageTemprature = document.querySelector("#avgTemp-unit");
 let uv = document.querySelector(".uv-unit");
 let heat = document.querySelector("#heat-unit");
+locate.addEventListener("click", () => {
+  getCurrentLocationWeather();
+});
 
-navigator.geolocation.getCurrentPosition(
-  (position) => {
-    // Success callback
+async function getCurrentLocationWeather() {
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+
     latitude = position.coords.latitude;
-    cityName;
     longitude = position.coords.longitude;
-    getWeatherData(latitude, longitude);
-  },
-  (error) => {
-    // Error callback
-    console.error("Error Code:", error.code, "-", error.message);
+    await getWeatherData(latitude, longitude);
+  } catch (error) {
+    displayError(error.message);
   }
-);
+}
+window.addEventListener("load", () => {
+  const savedLat = localStorage.getItem("latitude");
+  const savedLon = localStorage.getItem("longitude");
 
+  if (savedLat && savedLon) {
+    getWeatherData(savedLat, savedLon);
+  } else {
+    getCurrentLocationWeather(); // Fallback to current location
+  }
+});
 //Get weather Data function
 async function getWeatherData(latitude, longitude) {
   try {
     let response = await fetch(
-      `https://api.weatherapi.com/v1/forecast.json?key=${primaryApiKey}&q=${latitude},${longitude}&days=5&aqi=yes`
+      `https://api.weatherapi.com/v1/forecast.json?key=7272517a48db4727b09183643250205&q=${latitude},${longitude}&days=5&aqi=yes`
     );
     if (!response.ok) {
-      throw new Error("Something went Wrong..");
+      throw new Error("Failed to fetch Weather Data..");
     }
     let weatherData = await response.json();
-
-    // console.log(weatherData.forecast.forecastday);
-
     if (weatherData.forecast.forecastday[0].astro.is_moon_up != 1) {
       body.classList.add("dayBackground");
     } else {
@@ -66,9 +76,19 @@ async function getWeatherData(latitude, longitude) {
     }
     getWeeklyForecast(weatherData);
     showWeather(weatherData);
+    if (cityName.textContent.trim().length > 7) {
+      cityName.style.fontSize = "4rem";
+    }
     getHourlyForecast(weatherData);
   } catch (error) {
-    console.error(error.message);
+    if (
+      error instanceof TypeError &&
+      error.message.toLowerCase === "failed to fetch"
+    ) {
+      displayError("Unable to connect,please check you internet connnection..");
+    } else {
+      displayError(error.message);
+    }
   }
 }
 
@@ -89,9 +109,7 @@ function showWeather(weatherData) {
   let currentData = weatherData.current;
   let currentDayData = weatherData.forecast.forecastday[0].day;
 
-  //Basic info updation
-  // let storedCity = localStorage.getItem("cityName") || "";
-  cityName.textContent = weatherData.location.region;
+  cityName.textContent = `${weatherData.location.name}`;
 
   date.textContent = convertDateToDay(weatherData.forecast.forecastday[0].date);
   weatherCondition.textContent = currentData.condition.text;
@@ -136,63 +154,141 @@ function getHourlyForecast(weatherData) {
 async function getCityName(city) {
   try {
     let response = await fetch(
-      `https://api.weatherapi.com/v1/search.json?key=${primaryApiKey}&q=${city}`
+      `https://api.weatherapi.com/v1/search.json?key=7272517a48db4727b09183643250205&q=${city}`
     );
     if (!response.ok) {
       throw new Error("Something went wrong..");
     }
-    let data = await response.json();
-    await getWeatherData(data[0].lat, data[0].lon);
-    cityName.textContent = data[0].name + ", " + data[0].region;
-    localStorage.setItem("cityName", cityName.textContent);
-    // console.log(data);
-    return data;
+    let searchedCity = await response.json();
+    if (searchedCity.length === 0) {
+      suggestions.innerHTML = "";
+      throw new Error("City not found..");
+    }
+
+    localStorage.setItem("latitude", searchedCity[0].lat);
+    localStorage.setItem("longitude", searchedCity[0].lon);
+    console.log(searchedCity);
+
+    // Clear previous suggestions
+    suggestions.innerHTML = "";
+
+    let fragment = document.createDocumentFragment();
+    searchedCity.forEach((city) => {
+      let span = document.createElement("span");
+      span.className = "suggestions";
+      span.textContent = city.name + ", " + city.region + ", " + city.country; // Corrected to city.name
+      fragment.appendChild(span);
+    });
+
+    suggestions.appendChild(fragment);
+    return searchedCity;
   } catch (error) {
     console.error(error.message);
+    if (
+      error instanceof TypeError &&
+      error.message.toLowerCase === "failed to fetch"
+    ) {
+      displayError("Unable to connect,please check you internet connnection..");
+    } else {
+      console.error(error.message);
+      return null;
+    }
   }
 }
 
-input.addEventListener("keydown", (event) => {
+input.addEventListener("keydown", async (event) => {
   if (event.key === "Enter") {
-    getCityName(input.value);
-    input.value = "";
+    let searchedCity = await getCityName(input.value);
+    if (searchedCity) {
+      getWeatherData(searchedCity[0].lat, searchedCity[0].lon);
+      input.value = "";
+      suggestions.innerHTML = "";
+      suggestions.style.display = "none";
+    }
   }
 });
 
-searchButton.addEventListener("click", () => {
-  getCityName(input.value);
-  input.value = "";
+input.addEventListener("focusin", () => {
+  suggestions.style.display = "grid";
+});
+input.addEventListener("focusout", () => {
+  setTimeout(() => {
+    suggestions.style.display = "none";
+  }, 200);
 });
 
+function debounce(func, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+}
+let debounceCity = debounce(async (value) => {
+  await getCityName(value);
+}, 500);
+input.addEventListener("input", (event) => {
+  suggestions.style.display = "grid";
+  debounceCity(event.target.value);
+});
+
+searchButton.addEventListener("click", async () => {
+  let searchedCity = await getCityName(input.value);
+  if (searchedCity) {
+    getWeatherData(searchedCity[0].lat, searchedCity[0].lon);
+    input.value = "";
+    suggestions.innerHTML = "";
+    suggestions.style.display = "none";
+  }
+});
 function getWeeklyForecast(dailyData) {
-  let fragmentDay = document.createDocumentFragment();
-  let fragmentIcon = document.createDocumentFragment();
-  let fragmentTemp = document.createDocumentFragment();
+  let fragment = document.createDocumentFragment();
   let WeeklyData = dailyData.forecast.forecastday;
 
   // Clear previous content to avoid layout issues
   dailyWeather.innerHTML = "";
 
   WeeklyData.forEach((day) => {
-
     let date = document.createElement("span");
     date.className = "day";
     date.textContent = convertDateToDay(day.date);
+    fragment.appendChild(date);
 
     let icon = document.createElement("img");
     let iconSource = day.day.condition.icon;
     icon.src = iconSource;
+    fragment.appendChild(icon);
 
     let temp = document.createElement("span");
-    temp.className = "daily-temp"
+    temp.className = "daily-temp";
     let fetchTemp = day.day.avgtemp_c;
     temp.textContent = fetchTemp + "\u00B0";
-
-    fragmentDay.appendChild(date);
-    fragmentIcon.appendChild(icon);
-    fragmentTemp.appendChild(temp);
+    fragment.appendChild(temp);
   });
-  dailyWeather.appendChild(fragmentDay);
-  dailyWeather.appendChild(fragmentIcon);
-  dailyWeather.appendChild(fragmentTemp);
+
+  dailyWeather.appendChild(fragment);
 }
+
+function displayError(errorMessage) {
+  errorCardWrapper.style.display = "flex";
+  errorCard.textContent = errorMessage;
+  setTimeout(() => {
+    errorCardWrapper.style.display = "none";
+  }, 3000);
+}
+
+suggestions.addEventListener("click", async (event) => {
+  if (event.target.matches(".suggestions")) {
+    let clickedCity = event.target.textContent.split(",")[0]; // Extract city name
+    let searchedCity = await getCityName(clickedCity);
+    if (searchedCity) {
+      getWeatherData(searchedCity[0].lat, searchedCity[0].lon);
+      input.value = "";
+      suggestions.innerHTML = "";
+    }
+  }
+});
+suggestions.addEventListener("mousedown", () => {
+  suggestions.style.display = "grid";
+});
+

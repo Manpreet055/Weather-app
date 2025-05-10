@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,61 +10,72 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
     />
-
     <link rel="stylesheet" href="style.css" />
-    <script src="script.js" defer></script>
   </head>
   <body>
     <div class="searchbar-container">
-      <input type="text" class="searchBar" placeholder="Search the city" />
-      <button class="searchButton">Search</button>
+      <input class="searchbar" type="text" placeholder="Search city" />
+      <button class="location"><img class="locationIcon" src="gps.png" alt="live location"></button>
+      <button class="search-button">Search</button>
     </div>
-    <div class="hero-content">
-      <div class="current-weather">
-        <h1 class="city-name"></h1>
-        <h3 class="date"></h3>
-        <div class="aqi-info"></div>
-        <div class="temperature"></div>
-        <span class="current-weather-condition"></span>
-      </div>
+    <div class="dropdown-suggestions"></div>
+    <div class="error-card-wrapper"><div class="error-card">
+    </div>
+    <button onclick="location.reload(); " class="retry">Retry</button>
+    </div>
+    <div class="cards current-weather">
+      <h1 class="city-name">Dubai</h1>
+      <h3 class="date">Saturday</h3>
+      <div class="aqi-info">AQI</div>
+      <div class="temperature">29&deg;</div>
+      <span class="current-weather-condition">sunny</span>
+    </div>
+
+    <div class="cards hourly-card-container">
       <div class="hourly-weather">
         <h3>24-hour ForeCast</h3>
         <div class="hourly-weather-data"></div>
       </div>
     </div>
-    <div class="weather-summary">
-      <div class="weekly-weather">
+
+    <div class="cards weekly-weather">
+      <h3>5-day Forecast</h3>
+      <div class="daily-weather-data"></div>
+    </div>
+
+    <div class="cards weather-details-card">
+      <span>Pressure</span>
+      <span id="pressure-unit"></span>
+      <span>Wind speed</span>
+      <span id="windspeed-unit"></span>
+      <span>Feels Like</span>
+      <span id="feelslike-unit"></span>
+      <span>Heat Index</span>
+      <span id="heat-unit"></span>
+      <span>Visibility</span>
+      <span id="visibility-unit"></span>
+      <span>Avg Temperature</span>
+      <span id="avgTemp-unit"></span>
+    </div>
+
+    <div class="cards-group">
+      <div class="item uv-index">
+        <h3>UV Index</h3>
+        <span class="uv-unit"></span>
       </div>
-      <div class="weather-details-card">
-        <span>Pressure</span>
-        <span id="pressure-unit"></span>
-        <span>Wind speed</span>
-        <span id="windspeed-unit"></span>
-        <span>Feels Like</span>
-        <span id="feelslike-unit"></span>
-        <span>Heat Index</span>
-        <span id="heat-unit"></span>
-        <span>Visibility</span>
-        <span id="visibility-unit"></span>
-        <span>Avg Temperature</span>
-        <span id="avgTemp-unit"></span>
+      <div class="item humidity">
+        <h3>Humidity</h3>
+        <span class="humidity-unit"></span>
       </div>
-      <div class="uv-humidity-card">
-        <div class="uv-humidity">
-          <h3>UV Index</h3>
-          <span class="uv-unit"></span>
-        </div>
-        <div class="uv-humidity">
-          <h3>Humidity</h3>
-          <span class="humidity-unit"></span>
-        </div>
-        <div class="astro-card">
-          <img class="sunIcon" src="sunrise.png" alt="sunrise" />
-          <img class="sunIcon" src="sunset.png" alt="sunset" />
-          <span class="sunRise"></span>
-          <span class="sunSet"></span>
-        </div>
+      <div class="item sun-rise">
+        <img class="sunIcon" src="sunrise.png" alt="sunrise" />
+        <span class="sunRise"></span>
+      </div>
+      <div class="item sun-set">
+        <img class="sunIcon" src="sunset.png" alt="sunset" />
+        <span class="sunSet"></span>
       </div>
     </div>
+    <script src="script.js"></script>
   </body>
 </html>
