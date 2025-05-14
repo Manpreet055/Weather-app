@@ -1,41 +1,50 @@
-let longitude;
-let latitude;
-
-let input = document.querySelector(".searchbar");
-let searchButton = document.querySelector(".search-button");
-let cityName = document.querySelector(".city-name");
-let temperature = document.querySelector(".temperature");
-let airQualityElement = document.querySelector(".aqi-info");
-let date = document.querySelector(".date");
-let hourlyForeCast = document.querySelector(".hourly-weather-data");
-let body = document.querySelector("body");
-let weatherCondition = document.querySelector(".current-weather-condition");
-let dailyWeather = document.querySelector(".daily-weather-data");
-let aqiDescriptions = {
-  1: "Good",
-  2: "Fair",
-  3: "Moderate",
-  4: "Poor",
-  5: "Very Poor",
+//This object contains all the elements of functionality of the website...
+let functionality = {
+  input: document.querySelector(".searchbar"),
+  searchButton: document.querySelector(".search-button"),
+  body: document.querySelector("body"),
+  errorCardWrapper: document.querySelector(".error-card-wrapper"),
+  suggestions: document.querySelector(".dropdown-suggestions"),
+  errorCard: document.querySelector(".error-card"),
+  locate: document.querySelector(".location")
 };
-let errorCardWrapper = document.querySelector(".error-card-wrapper");
-let suggestions = document.querySelector(".dropdown-suggestions");
-let errorCard = document.querySelector(".error-card");
-let locate = document.querySelector(".location");
-let humidity = document.querySelector(".humidity-unit");
-let sunRise = document.querySelector(".sunRise");
-let sunSet = document.querySelector(".sunSet");
-let windSpeed = document.querySelector("#windspeed-unit");
-let pressure = document.querySelector("#pressure-unit");
-let feelsLike = document.querySelector("#feelslike-unit");
-let visibility = document.querySelector("#visibility-unit");
-let averageTemprature = document.querySelector("#avgTemp-unit");
-let uv = document.querySelector(".uv-unit");
-let heat = document.querySelector("#heat-unit");
-locate.addEventListener("click", () => {
+
+//This is the object which holds the all information of weather
+let ui = {
+  hourlyForeCast: document.querySelector(".hourly-weather-data"),
+  weatherCondition: document.querySelector(".current-weather-condition"),
+  dailyWeather: document.querySelector(".daily-weather-data"),
+  cityName: document.querySelector(".city-name"),
+  temperature: document.querySelector(".temperature"),
+  airQualityElement: document.querySelector(".aqi-info"),
+  date: document.querySelector(".date"),
+  heat: document.querySelector("#heat-unit"),
+  humidity: document.querySelector(".humidity-unit"),
+  windSpeed: document.querySelector("#windspeed-unit"),
+  pressure: document.querySelector("#pressure-unit"),
+  feelsLike: document.querySelector("#feelslike-unit"),
+  visibility: document.querySelector("#visibility-unit"),
+  averageTemprature: document.querySelector("#avgTemp-unit"),
+  sunRise: document.querySelector(".sunRise"),
+  sunSet: document.querySelector(".sunSet"),
+  uv: document.querySelector(".uv-unit"),
+  aqiDescriptions: {
+    1: "Good",
+    2: "Fair",
+    3: "Moderate",
+    4: "Poor",
+    5: "Very Poor",
+  }
+};
+
+//Get current location weather using click on ocation button
+functionality.locate.addEventListener("click", () => {
   getCurrentLocationWeather();
 });
 
+//Get live location Function
+let longitude;
+let latitude;
 async function getCurrentLocationWeather() {
   try {
     const position = await new Promise((resolve, reject) => {
@@ -49,6 +58,8 @@ async function getCurrentLocationWeather() {
     displayError(error.message);
   }
 }
+
+//Retriving cityname from localstorage
 window.addEventListener("load", () => {
   const savedLat = localStorage.getItem("latitude");
   const savedLon = localStorage.getItem("longitude");
@@ -59,7 +70,8 @@ window.addEventListener("load", () => {
     getCurrentLocationWeather(); // Fallback to current location
   }
 });
-//Get weather Data function
+
+//Get weather Data function,This function includes api call
 async function getWeatherData(latitude, longitude) {
   try {
     let response = await fetch(
@@ -69,16 +81,13 @@ async function getWeatherData(latitude, longitude) {
       throw new Error("Failed to fetch Weather Data..");
     }
     let weatherData = await response.json();
-    if (weatherData.forecast.forecastday[0].astro.is_moon_up != 1) {
-      body.classList.add("dayBackground");
-    } else {
-      body.classList.remove("dayBackground");
+    if (weatherData.forecast.forecastday[0].astro.is_moon_up === 1) {
+      functionality.body.classList.toggle(".night-background");
     }
+
+    //Calling all the function inside get weather function
     getWeeklyForecast(weatherData);
     showWeather(weatherData);
-    if (cityName.textContent.trim().length > 7) {
-      cityName.style.fontSize = "4rem";
-    }
     getHourlyForecast(weatherData);
   } catch (error) {
     if (
@@ -92,6 +101,7 @@ async function getWeatherData(latitude, longitude) {
   }
 }
 
+//This is the function to dynamically update the un index 
 function getUV(uvi) {
   if (uvi <= 2) return "Low";
   if (uvi <= 5) return "Moderate";
@@ -100,6 +110,7 @@ function getUV(uvi) {
   if (uvi > 10) return "Extreme";
 }
 
+//This is the function to 
 function convertDateToDay(date) {
   let inputDate = new Date(date);
   let day = inputDate.toLocaleDateString("en-us", { weekday: "long" });
@@ -109,38 +120,40 @@ function showWeather(weatherData) {
   let currentData = weatherData.current;
   let currentDayData = weatherData.forecast.forecastday[0].day;
 
-  cityName.textContent = `${weatherData.location.name}`;
+  ui.cityName.textContent = `${weatherData.location.name}`;
 
-  date.textContent = convertDateToDay(weatherData.forecast.forecastday[0].date);
-  weatherCondition.textContent = currentData.condition.text;
+  ui.date.textContent = convertDateToDay(
+    weatherData.forecast.forecastday[0].date
+  );
+  ui.weatherCondition.textContent = currentData.condition.text;
 
   let temp = currentData.temp_c;
-  temperature.textContent = temp.toFixed(0) + "\u00B0";
+  ui.temperature.textContent = temp.toFixed(0) + "\u00B0";
 
   let airQuality = weatherData.current.air_quality["us-epa-index"];
-  let displayAirQuality = aqiDescriptions[airQuality];
-  airQualityElement.textContent =
+  let displayAirQuality = ui.aqiDescriptions[airQuality];
+  ui.airQualityElement.textContent =
     "AQI" + " " + airQuality + "-" + displayAirQuality;
 
-  feelsLike.textContent = currentData.feelslike_c + "\u00B0";
-  humidity.textContent = currentData.humidity + "%";
-  pressure.textContent = currentData.pressure_mb + " " + "hPa";
-  uv.textContent = currentData.uv + " " + getUV(currentData.uv);
-  averageTemprature.textContent = currentDayData.avgtemp_c + "\u00B0";
-  visibility.textContent = currentDayData.avgvis_km + " " + "km";
-  heat.textContent = weatherData.current.heatindex_c + "\u00B0";
-  windSpeed.textContent = currentData.wind_kph + "km/h";
+  ui.feelsLike.textContent = currentData.feelslike_c + "\u00B0";
+  ui.humidity.textContent = currentData.humidity + "%";
+  ui.pressure.textContent = currentData.pressure_mb + " " + "hPa";
+  ui.uv.textContent = currentData.uv + " " + getUV(currentData.uv);
+  ui.averageTemprature.textContent = currentDayData.avgtemp_c + "\u00B0";
+  ui.visibility.textContent = currentDayData.avgvis_km + " " + "km";
+  ui.heat.textContent = weatherData.current.heatindex_c + "\u00B0";
+  ui.windSpeed.textContent = currentData.wind_kph + "km/h";
 
   let astro = weatherData.forecast.forecastday[0].astro;
-  sunRise.textContent = astro.sunrise;
-  sunSet.textContent = astro.sunset;
+  ui.sunRise.textContent = astro.sunrise;
+  ui.sunSet.textContent = astro.sunset;
 }
 //function of get hourlyData and update that data on DOM
 function getHourlyForecast(weatherData) {
   let hourlyData = weatherData.forecast.forecastday[0].hour;
-  hourlyForeCast.innerHTML = "";
+  ui.hourlyForeCast.innerHTML = "";
   hourlyData.forEach((data) => {
-    hourlyForeCast.insertAdjacentHTML(
+    ui.hourlyForeCast.insertAdjacentHTML(
       "beforeend",
       `<span class = hourlyTime>${data.time.slice(11)}</span><img src="${
         data.condition.icon
@@ -161,7 +174,8 @@ async function getCityName(city) {
     }
     let searchedCity = await response.json();
     if (searchedCity.length === 0) {
-      suggestions.innerHTML = "";
+      functionality.suggestions.innerHTML = "";
+      functionality.suggestions.textContent = "City not found";
       throw new Error("City not found..");
     }
 
@@ -170,7 +184,7 @@ async function getCityName(city) {
     console.log(searchedCity);
 
     // Clear previous suggestions
-    suggestions.innerHTML = "";
+    functionality.suggestions.innerHTML = "";
 
     let fragment = document.createDocumentFragment();
     searchedCity.forEach((city) => {
@@ -180,7 +194,7 @@ async function getCityName(city) {
       fragment.appendChild(span);
     });
 
-    suggestions.appendChild(fragment);
+    functionality.suggestions.appendChild(fragment);
     return searchedCity;
   } catch (error) {
     console.error(error.message);
@@ -196,24 +210,24 @@ async function getCityName(city) {
   }
 }
 
-input.addEventListener("keydown", async (event) => {
+functionality.input.addEventListener("keydown", async (event) => {
   if (event.key === "Enter") {
-    let searchedCity = await getCityName(input.value);
+    let searchedCity = await getCityName(functionality.input.value);
     if (searchedCity) {
       getWeatherData(searchedCity[0].lat, searchedCity[0].lon);
-      input.value = "";
-      suggestions.innerHTML = "";
-      suggestions.style.display = "none";
+      functionality.input.value = "";
+      functionality.suggestions.innerHTML = "";
+      functionality.suggestions.style.display = "none";
     }
   }
 });
 
-input.addEventListener("focusin", () => {
-  suggestions.style.display = "grid";
+functionality.input.addEventListener("focusin", () => {
+  functionality.suggestions.style.display = "grid";
 });
-input.addEventListener("focusout", () => {
+functionality.input.addEventListener("focusout", () => {
   setTimeout(() => {
-    suggestions.style.display = "none";
+    functionality.suggestions.style.display = "none";
   }, 200);
 });
 
@@ -227,18 +241,18 @@ function debounce(func, delay) {
 let debounceCity = debounce(async (value) => {
   await getCityName(value);
 }, 500);
-input.addEventListener("input", (event) => {
-  suggestions.style.display = "grid";
+functionality.input.addEventListener("input", (event) => {
+  functionality.suggestions.style.display = "grid";
   debounceCity(event.target.value);
 });
 
-searchButton.addEventListener("click", async () => {
-  let searchedCity = await getCityName(input.value);
+functionality.searchButton.addEventListener("click", async () => {
+  let searchedCity = await getCityName(functionality.input.value);
   if (searchedCity) {
     getWeatherData(searchedCity[0].lat, searchedCity[0].lon);
-    input.value = "";
-    suggestions.innerHTML = "";
-    suggestions.style.display = "none";
+    functionality.input.value = "";
+    functionality.suggestions.innerHTML = "";
+    functionality.suggestions.style.display = "none";
   }
 });
 function getWeeklyForecast(dailyData) {
@@ -246,7 +260,7 @@ function getWeeklyForecast(dailyData) {
   let WeeklyData = dailyData.forecast.forecastday;
 
   // Clear previous content to avoid layout issues
-  dailyWeather.innerHTML = "";
+  ui.dailyWeather.innerHTML = "";
 
   WeeklyData.forEach((day) => {
     let date = document.createElement("span");
@@ -266,28 +280,28 @@ function getWeeklyForecast(dailyData) {
     fragment.appendChild(temp);
   });
 
-  dailyWeather.appendChild(fragment);
+  ui.dailyWeather.appendChild(fragment);
 }
 
 function displayError(errorMessage) {
-  errorCardWrapper.style.display = "flex";
-  errorCard.textContent = errorMessage;
+  functionality.errorCardWrapper.style.display = "flex";
+  functionality.errorCard.textContent = errorMessage;
   setTimeout(() => {
-    errorCardWrapper.style.display = "none";
+    functionality.errorCardWrapper.style.display = "none";
   }, 3000);
 }
 
-suggestions.addEventListener("click", async (event) => {
+functionality.suggestions.addEventListener("click", async (event) => {
   if (event.target.matches(".suggestions")) {
     let clickedCity = event.target.textContent.split(",")[0]; // Extract city name
     let searchedCity = await getCityName(clickedCity);
     if (searchedCity) {
       getWeatherData(searchedCity[0].lat, searchedCity[0].lon);
-      input.value = "";
-      suggestions.innerHTML = "";
+      functionality.input.value = "";
+      functionality.suggestions.innerHTML = "";
     }
   }
 });
-suggestions.addEventListener("mousedown", () => {
-  suggestions.style.display = "grid";
+functionality.suggestions.addEventListener("mousedown", () => {
+  functionality.suggestions.style.display = "grid";
 });

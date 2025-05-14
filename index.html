@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A beautiful weather app that shows current, hourly, and weekly forecast." />
     <title>Weather App</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,37 +14,38 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="searchbar-container">
-      <input class="searchbar" type="text" placeholder="Search city" />
-      <button class="location"><img class="locationIcon" src="gps.png" alt="live location"></button>
-      <button class="search-button">Search</button>
-    </div>
+    <header class="searchbar-container" aria-label="search the city">
+      <input class="searchbar " type="text" placeholder="Search city" />
+      <button class="location glassmorphism"><img class="locationIcon" src="assests/gps.png" alt="live location"></button>
+      <button class="search-button glassmorphism"><img src="assests/search_icon.png" alt=""></button>
+    </header>
     <div class="dropdown-suggestions"></div>
-    <div class="error-card-wrapper"><div class="error-card">
+    <div class="error-card-wrapper"><div class="error-card glassmorphism">
     </div>
-    <button onclick="location.reload(); " class="retry">Retry</button>
-    </div>
-    <div class="cards current-weather">
-      <h1 class="city-name">Dubai</h1>
-      <h3 class="date">Saturday</h3>
-      <div class="aqi-info">AQI</div>
-      <div class="temperature">29&deg;</div>
-      <span class="current-weather-condition">sunny</span>
+    <button onclick="location.reload(); " class="retry glassmorphism">Retry</button>
     </div>
 
-    <div class="cards hourly-card-container">
-      <div class="hourly-weather">
+    <main class="cards current-weather" aria-label="Basic weather information">
+      <h1 class="city-name">Dubai</h1>
+      <h3 class="date">Saturday</h3>
+      <div class="aqi-info glassmorphism">AQI</div>
+      <div class="temperature">29&deg;</div>
+      <span class="current-weather-condition">sunny</span>
+    </main>
+
+    <section class="cards hourly-card-container" aria-label="get hourly forecast">
+      <div class="hourly-weather glassmorphism">
         <h3>24-hour ForeCast</h3>
         <div class="hourly-weather-data"></div>
       </div>
-    </div>
+    </section>
 
-    <div class="cards weekly-weather">
+    <section class="cards weekly-weather glassmorphism" aria-label="weekly weather data">
       <h3>5-day Forecast</h3>
       <div class="daily-weather-data"></div>
-    </div>
+    </section>
 
-    <div class="cards weather-details-card">
+    <article class="cards weather-details-card glassmorphism" aria-label="weather in detailed">
       <span>Pressure</span>
       <span id="pressure-unit"></span>
       <span>Wind speed</span>
@@ -56,26 +58,26 @@
       <span id="visibility-unit"></span>
       <span>Avg Temperature</span>
       <span id="avgTemp-unit"></span>
-    </div>
+    </article>
 
-    <div class="cards-group">
-      <div class="item uv-index">
+    <section class="cards-group" aria-label="get information like uv index,sun set sunrise etc.">
+      <div class="item uv-index glassmorphism">
         <h3>UV Index</h3>
         <span class="uv-unit"></span>
       </div>
-      <div class="item humidity">
+      <div class="item humidity glassmorphism">
         <h3>Humidity</h3>
         <span class="humidity-unit"></span>
       </div>
-      <div class="item sun-rise">
-        <img class="sunIcon" src="sunrise.png" alt="sunrise" />
+      <div class="item sun-rise glassmorphism">
+        <img class="sunIcon" src="assests/sunrise.png" alt="sunrise" />
         <span class="sunRise"></span>
       </div>
-      <div class="item sun-set">
-        <img class="sunIcon" src="sunset.png" alt="sunset" />
+      <div class="item sun-set glassmorphism">
+        <img class="sunIcon" src="/assests/sunset.png" alt="sunset" />
         <span class="sunSet"></span>
       </div>
-    </div>
-    <script src="script.js"></script>
+    </section>
+    <script src="script.js" defer></script>
   </body>
 </html>
