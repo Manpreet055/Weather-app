@@ -1,1 +1,238 @@
-let functionality={input:document.querySelector(".searchbar"),searchButton:document.querySelector(".search-button"),body:document.querySelector("body"),errorCardWrapper:document.querySelector(".error-card-wrapper"),suggestions:document.querySelector(".dropdown-suggestions"),errorCard:document.querySelector(".error-card"),locate:document.querySelector(".location")},ui={hourlyForeCast:document.querySelector(".hourly-weather-data"),weatherCondition:document.querySelector(".current-weather-condition"),dailyWeather:document.querySelector(".daily-weather-data"),cityName:document.querySelector(".city-name"),temperature:document.querySelector(".temperature"),airQualityElement:document.querySelector(".aqi-info"),date:document.querySelector(".date"),heat:document.querySelector("#heat-unit"),humidity:document.querySelector(".humidity-unit"),windSpeed:document.querySelector("#windspeed-unit"),pressure:document.querySelector("#pressure-unit"),feelsLike:document.querySelector("#feelslike-unit"),visibility:document.querySelector("#visibility-unit"),averageTemprature:document.querySelector("#avgTemp-unit"),sunRise:document.querySelector(".sunRise"),sunSet:document.querySelector(".sunSet"),uv:document.querySelector(".uv-unit"),aqiDescriptions:{1:"Good",2:"Fair",3:"Moderate",4:"Poor",5:"Very Poor"}};function displayError(e){functionality.errorCardWrapper.style.display="flex",functionality.errorCard.textContent=e,setTimeout((()=>{functionality.errorCardWrapper.style.display="none"}),3e3)}async function getCurrentLocationWeather(){try{const e=await new Promise(((e,t)=>{navigator.geolocation.getCurrentPosition(e,t)}));let t=e.coords.latitude,n=e.coords.longitude;await getWeatherData(t,n)}catch(e){displayError(e.message)}}async function getWeatherData(e,t){try{let n=await fetch(`https://api.weatherapi.com/v1/forecast.json?key=3331d45ceac54e4f8b8124628251705&q=${e},${t}&days=5&aqi=yes`);if(!n.ok)throw new Error("Failed to fetch Weather Data..");let o=await n.json();1!=o.forecast.forecastday[0].astro.is_sun_up?functionality.body.classList.add("night"):functionality.body.classList.remove("night"),getWeeklyForecast(o),showWeather(o),getHourlyForecast(o)}catch(e){e instanceof TypeError&&"Failed to fetch"===e.message?displayError("Unable to connect,please check you internet connnection.."):displayError(e.message)}}function getUV(e){return e<=2?"Low":e<=5?"Moderate":e<=7?"High":e<=10?"Very High":e>10?"Extreme":void 0}function convertDateToDay(e){return new Date(e).toLocaleDateString("en-us",{weekday:"long"})}function showWeather(e){let t=e.current,n=e.forecast.forecastday[0].day;ui.cityName.textContent=`${e.location.name}`,ui.date.textContent=convertDateToDay(e.forecast.forecastday[0].date),ui.weatherCondition.textContent=t.condition.text;let o=t.temp_c;ui.temperature.textContent=o.toFixed(0)+"°";let a=e.current.air_quality["us-epa-index"],i=ui.aqiDescriptions[a];ui.airQualityElement.textContent="AQI "+a+"-"+i,ui.feelsLike.textContent=t.feelslike_c+"°",ui.humidity.textContent=t.humidity+"%",ui.pressure.textContent=t.pressure_mb+" hPa",ui.uv.textContent=t.uv+" "+getUV(t.uv),ui.averageTemprature.textContent=n.avgtemp_c+"°",ui.visibility.textContent=n.avgvis_km+" km",ui.heat.textContent=e.current.heatindex_c+"°",ui.windSpeed.textContent=t.wind_kph+"km/h";let r=e.forecast.forecastday[0].astro;ui.sunRise.textContent=r.sunrise,ui.sunSet.textContent=r.sunset}function getHourlyForecast(e){let t=e.forecast.forecastday[0].hour;ui.hourlyForeCast.innerHTML="",t.forEach((e=>{ui.hourlyForeCast.insertAdjacentHTML("beforeend",`<span class = hourlyTime>${e.time.slice(11)}</span><img src="${e.condition.icon}" alt="weatherIcon" class="hourlyWeatherIcon" ><span class="hourlyTemp">${e.temp_c+"°"}</span>`)}))}function getWeeklyForecast(e){let t=document.createDocumentFragment(),n=e.forecast.forecastday;ui.dailyWeather.innerHTML="",n.forEach((e=>{let n=document.createElement("span");n.className="day",n.textContent=convertDateToDay(e.date),t.appendChild(n);let o=document.createElement("img"),a=e.day.condition.icon;o.src=a,t.appendChild(o);let i=document.createElement("span");i.className="daily-temp";let r=e.day.avgtemp_c;i.textContent=r+"°",t.appendChild(i)})),ui.dailyWeather.appendChild(t)}async function getCityName(e){try{let t=await fetch(`https://api.weatherapi.com/v1/search.json?key=3331d45ceac54e4f8b8124628251705&q=${e}`);if(!t.ok)throw new Error("Something went wrong..");let n=await t.json();if(0===n.length)throw functionality.suggestions.textContent="City not found",new Error("City not found..");localStorage.setItem("latitude",n[0].lat),localStorage.setItem("longitude",n[0].lon),functionality.suggestions.innerHTML="";let o=document.createDocumentFragment();return n.forEach((e=>{let t=document.createElement("span");t.className="suggestions",t.textContent=e.name+", "+e.region+", "+e.country,o.appendChild(t)})),functionality.suggestions.appendChild(o),n}catch(e){if(console.error(e.message),!(e instanceof TypeError&&"failed to fetch"===e.message.toLowerCase))return console.error(e.message),null;displayError("Unable to connect,please check you internet connnection..")}}function debounce(e,t){let n;return(...o)=>{clearTimeout(n),n=setTimeout((()=>e(...o)),t)}}functionality.locate.addEventListener("click",(()=>{getCurrentLocationWeather()})),window.addEventListener("load",(()=>{const e=localStorage.getItem("latitude"),t=localStorage.getItem("longitude");e&&t?getWeatherData(e,t):getCurrentLocationWeather()})),functionality.input.addEventListener("keydown",(async e=>{if("Enter"===e.key){let e=await getCityName(functionality.input.value);e&&(getWeatherData(e[0].lat,e[0].lon),functionality.input.value="",functionality.suggestions.innerHTML="",functionality.suggestions.style.display="none")}})),functionality.input.addEventListener("focusin",(()=>{functionality.suggestions.style.display="grid"})),functionality.input.addEventListener("focusout",(()=>{setTimeout((()=>{functionality.suggestions.style.display="none"}),200)}));let debounceCity=debounce((async e=>{await getCityName(e)}),500);functionality.input.addEventListener("input",(e=>{functionality.suggestions.style.display="grid",debounceCity(e.target.value)})),functionality.searchButton.addEventListener("click",(async()=>{let e=await getCityName(functionality.input.value);e&&(getWeatherData(e[0].lat,e[0].lon),functionality.input.value="",functionality.suggestions.innerHTML="",functionality.suggestions.style.display="none")})),functionality.suggestions.addEventListener("click",(async e=>{if(e.target.matches(".suggestions")){let t=e.target.textContent.split(",")[0],n=await getCityName(t);n&&(getWeatherData(n[0].lat,n[0].lon),functionality.input.value="",functionality.suggestions.innerHTML="")}}));
+let functionality = {
+    input: document.querySelector(".searchbar"),
+    searchButton: document.querySelector(".search-button"),
+    body: document.querySelector("body"),
+    errorCardWrapper: document.querySelector(".error-card-wrapper"),
+    suggestions: document.querySelector(".dropdown-suggestions"),
+    errorCard: document.querySelector(".error-card"),
+    locate: document.querySelector(".location"),
+  },
+  ui = {
+    hourlyForeCast: document.querySelector(".hourly-weather-data"),
+    weatherCondition: document.querySelector(".current-weather-condition"),
+    dailyWeather: document.querySelector(".daily-weather-data"),
+    cityName: document.querySelector(".city-name"),
+    temperature: document.querySelector(".temperature"),
+    airQualityElement: document.querySelector(".aqi-info"),
+    date: document.querySelector(".date"),
+    heat: document.querySelector("#heat-unit"),
+    humidity: document.querySelector(".humidity-unit"),
+    windSpeed: document.querySelector("#windspeed-unit"),
+    pressure: document.querySelector("#pressure-unit"),
+    feelsLike: document.querySelector("#feelslike-unit"),
+    visibility: document.querySelector("#visibility-unit"),
+    averageTemprature: document.querySelector("#avgTemp-unit"),
+    sunRise: document.querySelector(".sunRise"),
+    sunSet: document.querySelector(".sunSet"),
+    uv: document.querySelector(".uv-unit"),
+    aqiDescriptions: {
+      1: "Good",
+      2: "Fair",
+      3: "Moderate",
+      4: "Poor",
+      5: "Very Poor",
+    },
+  };
+function displayError(e) {
+  (functionality.errorCardWrapper.style.display = "flex"),
+    (functionality.errorCard.textContent = e),
+    setTimeout(() => {
+      functionality.errorCardWrapper.style.display = "none";
+    }, 3e3);
+}
+async function getCurrentLocationWeather() {
+  try {
+    const e = await new Promise((e, t) => {
+      navigator.geolocation.getCurrentPosition(e, t);
+    });
+    let t = e.coords.latitude,
+      n = e.coords.longitude;
+    await getWeatherData(t, n);
+  } catch (e) {
+    displayError(e.message);
+  }
+}
+async function getWeatherData(e, t) {
+  try {
+    let n = await fetch(
+      `https://api.weatherapi.com/v1/forecast.json?key=3331d45ceac54e4f8b8124628251705&q=${e},${t}&days=5&aqi=yes`
+    );
+    if (!n.ok) throw new Error("Failed to fetch Weather Data..");
+    let o = await n.json();
+    1 != o.forecast.forecastday[0].astro.is_sun_up
+      ? functionality.body.classList.add("night")
+      : functionality.body.classList.remove("night"),
+      getWeeklyForecast(o),
+      showWeather(o),
+      getHourlyForecast(o);
+  } catch (e) {
+    e instanceof TypeError && "Failed to fetch" === e.message
+      ? displayError(
+          "Unable to connect,please check you internet connnection.."
+        )
+      : displayError(e.message);
+  }
+}
+function getUV(e) {
+  return e <= 2
+    ? "Low"
+    : e <= 5
+    ? "Moderate"
+    : e <= 7
+    ? "High"
+    : e <= 10
+    ? "Very High"
+    : e > 10
+    ? "Extreme"
+    : void 0;
+}
+function convertDateToDay(e) {
+  return new Date(e).toLocaleDateString("en-us", { weekday: "long" });
+}
+function showWeather(e) {
+  let t = e.current,
+    n = e.forecast.forecastday[0].day;
+  (ui.cityName.textContent = `${e.location.name}`),
+    (ui.date.textContent = convertDateToDay(e.forecast.forecastday[0].date)),
+    (ui.weatherCondition.textContent = t.condition.text);
+  let o = t.temp_c;
+  ui.temperature.textContent = o.toFixed(0) + "°";
+  let a = e.current.air_quality["us-epa-index"],
+    i = ui.aqiDescriptions[a];
+  (ui.airQualityElement.textContent = "AQI " + a + "-" + i),
+    (ui.feelsLike.textContent = t.feelslike_c + "°"),
+    (ui.humidity.textContent = t.humidity + "%"),
+    (ui.pressure.textContent = t.pressure_mb + " hPa"),
+    (ui.uv.textContent = t.uv + " " + getUV(t.uv)),
+    (ui.averageTemprature.textContent = n.avgtemp_c + "°"),
+    (ui.visibility.textContent = n.avgvis_km + " km"),
+    (ui.heat.textContent = e.current.heatindex_c + "°"),
+    (ui.windSpeed.textContent = t.wind_kph + "km/h");
+  let r = e.forecast.forecastday[0].astro;
+  (ui.sunRise.textContent = r.sunrise), (ui.sunSet.textContent = r.sunset);
+}
+function getHourlyForecast(e) {
+  let t = e.forecast.forecastday[0].hour;
+  (ui.hourlyForeCast.innerHTML = ""),
+    t.forEach((e) => {
+      ui.hourlyForeCast.insertAdjacentHTML(
+        "beforeend",
+        `<span class = hourlyTime>${e.time.slice(11)}</span><img src="${
+          e.condition.icon
+        }" alt="weatherIcon" class="hourlyWeatherIcon" ><span class="hourlyTemp">${
+          e.temp_c + "°"
+        }</span>`
+      );
+    });
+}
+function getWeeklyForecast(e) {
+  let t = document.createDocumentFragment(),
+    n = e.forecast.forecastday;
+  (ui.dailyWeather.innerHTML = ""),
+    n.forEach((e) => {
+      let n = document.createElement("span");
+      (n.className = "day"),
+        (n.textContent = convertDateToDay(e.date)),
+        t.appendChild(n);
+      let o = document.createElement("img"),
+        a = e.day.condition.icon;
+      (o.src = a), t.appendChild(o);
+      let i = document.createElement("span");
+      i.className = "daily-temp";
+      let r = e.day.avgtemp_c;
+      (i.textContent = r + "°"), t.appendChild(i);
+    }),
+    ui.dailyWeather.appendChild(t);
+}
+async function getCityName(e) {
+  try {
+    let t = await fetch(
+      `https://api.weatherapi.com/v1/search.json?key=3331d45ceac54e4f8b8124628251705&q=${e}`
+    );
+    if (!t.ok) throw new Error("Something went wrong..");
+    let n = await t.json();
+    if (0 === n.length)
+      throw (
+        ((functionality.suggestions.textContent = "City not found"),
+        new Error("City not found.."))
+      );
+    localStorage.setItem("latitude", n[0].lat),
+      localStorage.setItem("longitude", n[0].lon),
+      (functionality.suggestions.innerHTML = "");
+    let o = document.createDocumentFragment();
+    return (
+      n.forEach((e) => {
+        let t = document.createElement("span");
+        (t.className = "suggestions"),
+          (t.textContent = e.name + ", " + e.region + ", " + e.country),
+          o.appendChild(t);
+      }),
+      functionality.suggestions.appendChild(o),
+      n
+    );
+  } catch (e) {
+    if (
+      (console.error(e.message),
+      !(e instanceof TypeError && "failed to fetch" === e.message.toLowerCase))
+    )
+      return console.error(e.message), null;
+    displayError("Unable to connect,please check you internet connnection..");
+  }
+}
+function debounce(e, t) {
+  let n;
+  return (...o) => {
+    clearTimeout(n), (n = setTimeout(() => e(...o), t));
+  };
+}
+functionality.locate.addEventListener("click", () => {
+  getCurrentLocationWeather();
+}),
+  window.addEventListener("load", () => {
+    const e = localStorage.getItem("latitude"),
+      t = localStorage.getItem("longitude");
+    e && t ? getWeatherData(e, t) : getCurrentLocationWeather();
+  }),
+  functionality.input.addEventListener("keydown", async (e) => {
+    if ("Enter" === e.key) {
+      let e = await getCityName(functionality.input.value);
+      e &&
+        (getWeatherData(e[0].lat, e[0].lon),
+        (functionality.input.value = ""),
+        (functionality.suggestions.innerHTML = ""),
+        (functionality.suggestions.style.display = "none"));
+    }
+  }),
+  functionality.input.addEventListener("focusin", () => {
+    functionality.suggestions.style.display = "grid";
+  }),
+  functionality.input.addEventListener("focusout", () => {
+    setTimeout(() => {
+      functionality.suggestions.style.display = "none";
+    }, 200);
+  });
+let debounceCity = debounce(async (e) => {
+  await getCityName(e);
+}, 500);
+functionality.input.addEventListener("input", (e) => {
+  (functionality.suggestions.style.display = "grid"),
+    debounceCity(e.target.value);
+}),
+  functionality.searchButton.addEventListener("click", async () => {
+    let e = await getCityName(functionality.input.value);
+    e &&
+      (getWeatherData(e[0].lat, e[0].lon),
+      (functionality.input.value = ""),
+      (functionality.suggestions.innerHTML = ""),
+      (functionality.suggestions.style.display = "none"));
+  }),
+  functionality.suggestions.addEventListener("click", async (e) => {
+    if (e.target.matches(".suggestions")) {
+      let t = e.target.textContent.split(",")[0],
+        n = await getCityName(t);
+      n &&
+        (getWeatherData(n[0].lat, n[0].lon),
+        (functionality.input.value = ""),
+        (functionality.suggestions.innerHTML = ""));
+    }
+  });
