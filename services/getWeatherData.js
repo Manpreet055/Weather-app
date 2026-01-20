@@ -13,7 +13,6 @@ const getWeatherData = async (latitude, longitude) => {
       `/forecast.json?q=${latitude},${longitude}&days=5&aqi=yes`,
     );
     const data = response.data;
-    console.log(data);
     if (data.forecast.forecastday[0].astro.is_sun_up !== 1) {
       body.classList.add("night");
     } else {

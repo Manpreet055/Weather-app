@@ -31,17 +31,17 @@ function getUV(uvIndex) {
 }
 
 function showWeather(data) {
-  const currentWeatherData = data.current;
-  const todayForecast = data.forecast.forecastday[0].day;
+  const currentWeatherData = data?.current;
+  const todayForecast = data?.forecast.forecastday[0].day;
 
-  cityName.textContent = `${data.location.name}`;
-  date.textContent = convertDateToDay(data.forecast.forecastday[0].date);
-  weatherCondition.textContent = currentWeatherData.condition.text;
+  cityName.textContent = `${data?.location.name}`;
+  date.textContent = convertDateToDay(data?.forecast.forecastday[0].date);
+  weatherCondition.textContent = currentWeatherData?.condition.text;
 
   const temperatureCelsius = currentWeatherData.temp_c;
-  temperature.textContent = temperatureCelsius.toFixed(0) + "°";
+  temperature.textContent = Number(temperatureCelsius).toFixed(0) + "°";
 
-  const aqiIndex = data.current.air_quality["us-epa-index"];
+  const aqiIndex = data?.current?.air_quality["us-epa-index"];
   const aqiDescription = aqiDescriptions[aqiIndex];
   airQualityElement.textContent = `AQI ${aqiIndex}-${aqiDescription}`;
 
@@ -54,7 +54,7 @@ function showWeather(data) {
   heat.textContent = currentWeatherData.heatindex_c + "°";
   windSpeed.textContent = currentWeatherData.wind_kph + "km/h";
 
-  const astroData = data.forecast.forecastday[0].astro;
+  const astroData = data?.forecast.forecastday[0].astro;
   sunRise.textContent = astroData.sunrise;
   sunSet.textContent = astroData.sunset;
 }

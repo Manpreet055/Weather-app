@@ -2,7 +2,6 @@ import debounceCity from "./utils/debounce.js";
 import getWeatherData from "./services/getWeatherData.js";
 import getCurrentLocationWeather from "./utils/getCurrentLocation.js";
 import getCityName from "./services/getCityName.js";
-
 let input = document.querySelector(".searchbar");
 let searchButton = document.querySelector(".search-button");
 let suggestions = document.querySelector(".dropdown-suggestions");
@@ -66,7 +65,7 @@ suggestions.addEventListener("click", async (event) => {
     let city = event.target.textContent.split(",")[0],
       cityName = await getCityName(city);
     cityName &&
-      (getWeatherData(cityName[0].lat, cityName[0].lon),
+      (getWeatherData(cityName[0]?.lat, cityName[0]?.lon),
       (input.value = ""),
       (suggestions.innerHTML = ""),
       (suggestions.style.display = "none"));
