@@ -1,3 +1,4 @@
+import { convertDateToDay } from "./convertDate.js";
 let weatherCondition = document.querySelector(".current-weather-condition");
 let cityName = document.querySelector(".city-name");
 let temperature = document.querySelector(".temperature");
